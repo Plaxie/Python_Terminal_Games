@@ -61,7 +61,7 @@ def main_menu():
 
     while True:
         choice = input(
-            "\033c\
+            "\033c                  \
               o===---[X or O]---===o\
             \n|                    |\
             \n|      1. Start      |\
@@ -75,7 +75,7 @@ def main_menu():
 
     if choice in ['1']:
         turn = input(
-            "\033c\
+            "\033c                  \
               o==--[Start with]--==o\
             \n|                    |\
             \n|        1. X        |\
@@ -92,7 +92,7 @@ def main_menu():
 
 if __name__ == '__main__':
 
-    main_menu()        
+    turn = main_menu()
 
 
 
