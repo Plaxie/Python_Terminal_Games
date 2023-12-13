@@ -52,6 +52,48 @@ def placer(current_turn: int, coords: tuple[int], table: Table) -> Table:
     
     if valid_position(ro, co, table):
         table[ro][co] = character
+        return table, True
+
+    else:
+        return table, False
+    
+def main_menu():
+
+    while True:
+        choice = input(
+            "\033c\
+              o===---[X or O]---===o\
+            \n|                    |\
+            \n|      1. Start      |\
+            \n|      2. Exit       |\
+            \n|                    |\
+            \no=======------=======o\
+            \n      Input :: "
+            )
+        if choice in list('12'): break
+        else: input('Incorrect Option! :: ')
+
+    if choice in ['1']:
+        turn = input(
+            "\033c\
+              o==--[Start with]--==o\
+            \n|                    |\
+            \n|        1. X        |\
+            \n|        2. O        |\
+            \n|                    |\
+            \no=======------=======o\
+            \n      Input :: "
+            )
+        if turn in list('12'):
+            turn = abs(int(turn) - 2)
+        else: input('Invalid Choice! Defaulting to X :: ')
+
+    return turn
+
+if __name__ == '__main__':
+
+    main_menu()        
+
 
 
     
