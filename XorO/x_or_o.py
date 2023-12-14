@@ -12,8 +12,7 @@ def display_table(table:Table) -> None:
             \n| {"0 0" if table[0][0] == empty else f" {table[0][0]} "} | {"0 1" if table[0][1] == empty else f" {table[0][1]} "} | {"0 2" if table[0][2] == empty else f" {table[0][2]} "} |\
             \n| {"1 0" if table[1][0] == empty else f" {table[1][0]} "} | {"1 1" if table[1][1] == empty else f" {table[1][1]} "} | {"1 2" if table[1][2] == empty else f" {table[1][2]} "} |\
             \n| {"2 0" if table[2][0] == empty else f" {table[2][0]} "} | {"2 1" if table[2][1] == empty else f" {table[2][1]} "} | {"2 2" if table[2][2] == empty else f" {table[2][2]} "} |\
-            \no-----o-----o-----o\
-          ')  # Last part.
+            \no-----o-----o-----o')
 
 
 def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
@@ -86,16 +85,23 @@ def valid_position(row: int, column: int, table: Table) -> bool:
 
 def checkfortriples(table:Table) -> bool:
 
+    '''Checks if X or O has done any triples.
+    - Table to check in'''
+
+    # Collects every possible triple config.
     data = HORIZONTALS(table) + VERTICALS(table) + CROSS(table)
 
+    # Checks if any line is 'XXX' or 'OOO'
     for line in data:
-        value = determine_value(line)
-        if value in [264, 237]:
+        if line in ['XXX', 'OOO']:
             return True
+    # return False if not
     return False
 
 
 def HORIZONTALS(table:Table) -> list[str]:
+
+    '''Gets all possible horizontal lines in a 3x3'''
 
     result = []
     for row in table:
@@ -104,6 +110,8 @@ def HORIZONTALS(table:Table) -> list[str]:
     
 def VERTICALS(table:Table) -> list[str]:
 
+    '''Gets all possible vertical lines in a 3x3'''
+
     result = []
     for idx in range(3):
         result.append(table[0][idx]+table[1][idx]+table[2][idx])
@@ -111,14 +119,11 @@ def VERTICALS(table:Table) -> list[str]:
     
 
 def CROSS(table:Table) -> list[str]:
+    
+    '''Gets the cross in a 3x3'''
+
     return [table[0][0] + table[1][1] + table[2][2], \
         table[0][2] + table[1][1] + table[2][0]]
-
-
-def determine_value(string:str) -> int:
-    result = 0
-    for char in string: result += ord(char)
-    return result
 
 
 def main_menu() -> bool:
@@ -160,7 +165,7 @@ def main_menu() -> bool:
             turn = True
     # else exit for option 2
     else:
-        exit()
+        exit('\033c\no========-----========o\n| Hope you had fun :> |\no========-----========o\n\n')
     
     return turn  # return the current starting turn for the game to begin
 
@@ -189,12 +194,14 @@ if __name__ == '__main__':  # Main Run
             ]
         ]
 
-        turn = main_menu()  # gets the starting turn of the player 1.
+        turn = main_menu()  # gets the starting turn of the player.
+
+        # Prompt Instructions of the game.
         input(
             "\033cINSTRUCTIONS:\
              \nInput your position to place \
-             \nas in index 00 or 13 where 1 \
-             \nis the row number and 3 is the\
+             \nas in index 00 or 12 where 1 \
+             \nis the row number and 2 is the\
              \ncolumn number.\
            \n\nAny mistakes cannot be undone.\
            \n\nYou can type at any time: \
@@ -202,32 +209,56 @@ if __name__ == '__main__':  # Main Run
              \nMENU: returns to main menu.\
            \n\nPress Enter to continue :: "
            )
+        
+        # Game start loop.
         while True:
+
+            # Display the table.
             print('\033c')
             display_table(table)
             
+            # Get user input.
             user_input = input(f"it's {positions[turn]}'s turn :: ")
 
+            match user_input.lower():
+                case 'quit': exit('\033c\no========-----========o\n| Hope you had fun :> |\no========-----========o\n\n')
+                case 'menu': break
+
+            # Get input to usable format: Boolean, error or coordinates.
             interpretted = interpretor(user_input)
+
+            # if input is correct, then try placing the given coords on the table.
             if interpretted[0] == True:
                 table_data = placer(turn, interpretted[1], table)
 
+                # if there's no space ie False is returned for first item.
                 if table_data[0] == False:
                     input(f"There is no empty space on {interpretted[1]} :: ")
+                # else if there is free space.
                 else:
+
+                    # Overwrite current table with modified table.
                     table = table_data[1]
+
+                    # Check if anyone Won.
                     if checkfortriples(table):
+
+                        # if won then display for the last move and prompt win.
                         print('\033c')
                         display_table(table)
                         input(f"\n{positions[turn]} has won the Game!")
-                        break
+                        break  # leave the start loop.
+
+                    # swtich turn.
                     turn = not turn
                     
-                
-            else:
+            else:  # show error for poor input.
                 input(interpretted[1])
-        usrinp = input(f"Do you want to [QUIT] or continue :: ").lower()
-        if usrinp == 'quit':exit()
+        
+        # Prompt user if they want to leave or continue.
+        if user_input.lower() != 'menu':
+            usrinp = input(f"Do you want to [QUIT] or continue :: ").lower()
+            if usrinp == 'quit':exit('\033c\no========-----========o\n| Hope you had fun :> |\no========-----========o\n\n')
 
 
 
