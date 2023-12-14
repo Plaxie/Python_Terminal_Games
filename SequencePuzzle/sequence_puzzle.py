@@ -424,12 +424,14 @@ if __name__ == "__main__":
 
         # Display the One time Winning state and Current State.
         des_len:int = (6*len(win_Table))-1
+        des_char = '-'*des_len
+        
         win = 'Winning_State'
         print('\033c')
     
         print(f'o{win:-^{des_len}}o')
         display_table(win_Table)
-        print(f'o{'-'*des_len}o')
+        print(f'o{des_char}o')
         
         input('\nINSTRUCTIONS: You can type: 5 7 15 1           \
                 \nTo move all those numbers together.           \
