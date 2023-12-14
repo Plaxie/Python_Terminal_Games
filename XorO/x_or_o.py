@@ -12,7 +12,7 @@ def display_table(table:Table) -> None:
     - Table'''
     
     # Just string joins and list Comprehension Magic.
-    print(''.join(['o-----o-----o-----o\n'] + [''.join([f'| {rdx} {cdx} ' if row[cdx] == empty else f'|  {row[cdx]}  ' for cdx in range(3) ] + ['|\no-----o-----o-----o\n'])for rdx, row in enumerate(table)]))
+    print(''.join(['o-----o-----o-----o\n'] + [''.join([f'| {rdx} {cdx} ' if row[cdx] == empty else f'|  {row[cdx]}  ' for cdx in range(len(row)) ] + ['|\no-----o-----o-----o\n'])for rdx, row in enumerate(table)]))
     
 
 ################################
