@@ -1,4 +1,3 @@
-from random import randint as rdi
 Table = list[list[str]]
 
 
