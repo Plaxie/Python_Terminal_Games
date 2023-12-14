@@ -429,7 +429,7 @@ if __name__ == "__main__":
     
         print(f'o{win:-^{des_len}}o')
         display_table(win_Table)
-        print(f'o{'-'*des_len}o')
+        print(f'o{des_len}o')
         
         input('\nINSTRUCTIONS: You can type: 5 7 15 1           \
                 \nTo move all those numbers together.           \
