@@ -309,13 +309,14 @@ def get_input(table: list[list], size: str, diff: str) -> list[int]:
     
     possibles = flatten(table)  # list of possible items.
     des_len = 6*len(table)-1
+    des_char = '-'*des_len
     
     # Display the table.
     print(f'\033cSize [{size}]: Difficulty [{diff}]: Table:\n')
     
-    print(f'o{'-'*des_len}o')
+    print(f'o{des_char}o')
     display_table(table)
-    print(f'o{'-'*des_len}o')
+    print(f'o{des_char}o')
     
     move_nums = input("\nEnter the number(s) you want to move: ")  
     
@@ -353,9 +354,9 @@ def get_input(table: list[list], size: str, diff: str) -> list[int]:
             # Display the table.
             print(f'\033cSize [{size}]: Difficulty [{diff}]: Table:\n')
             
-            print(f'o{'-'*des_len}o')
+            print(f'o{des_char}o')
             display_table(table)
-            print(f'o{'-'*des_len}o')
+            print(f'o{des_char}o')
             
             # Ask for re-input.
             move_nums = input("\nError: Correctly enter the number(s) you want to move: ")
