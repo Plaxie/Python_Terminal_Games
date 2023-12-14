@@ -1,6 +1,11 @@
 Table = list[list[str]]
 
 
+################################
+#      DISPLAY  FUNCTIONS      #
+################################
+
+
 def display_table(table:Table) -> None:
     
     '''{Displays a Table} in a clean format:
@@ -12,6 +17,11 @@ def display_table(table:Table) -> None:
             \n| {"1 0" if table[1][0] == empty else f" {table[1][0]} "} | {"1 1" if table[1][1] == empty else f" {table[1][1]} "} | {"1 2" if table[1][2] == empty else f" {table[1][2]} "} |\
             \n| {"2 0" if table[2][0] == empty else f" {table[2][0]} "} | {"2 1" if table[2][1] == empty else f" {table[2][1]} "} | {"2 2" if table[2][2] == empty else f" {table[2][2]} "} |\
             \no-----o-----o-----o')
+    
+
+################################
+#     INPUT FIXED FUNCTION     #
+################################
 
 
 def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
@@ -37,6 +47,11 @@ def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
         return False, f"Move [{row}][{column}] are Invalid!"
 
 
+################################
+#       TABLE FUNCTIONS        #
+################################
+
+
 def placer(current_turn: bool, coords: tuple[int], table: Table) -> tuple[bool, Table]:
 
     '''{Places the current turn's selected position} on the table:
@@ -54,7 +69,12 @@ def placer(current_turn: bool, coords: tuple[int], table: Table) -> tuple[bool, 
 
     else:  # return the unmodified table with False as error indicator.
         return False, table
-    
+
+
+################################
+#       LOGIC FUNCTIONS        #
+################################
+
 
 def valid_move(*args) -> bool:
 
@@ -98,6 +118,11 @@ def checkfortriples(table:Table) -> bool:
     return False
 
 
+################################
+#       CHECK FUNCTIONS        #
+################################
+
+
 def HORIZONTALS(table:Table) -> list[str]:
 
     '''Gets all possible horizontal lines in a 3x3'''
@@ -123,6 +148,12 @@ def CROSS(table:Table) -> list[str]:
 
     return [table[0][0] + table[1][1] + table[2][2], \
         table[0][2] + table[1][1] + table[2][0]]
+
+
+
+################################
+#       MAIN MENU INPUT        #
+################################
 
 
 def main_menu() -> bool:
@@ -168,6 +199,12 @@ def main_menu() -> bool:
     
     return turn  # return the current starting turn for the game to begin
 
+
+################################
+#       RUN STARTS HERE        #
+################################
+
+
 if __name__ == '__main__':  # Main Run
 
     # Game Variables
@@ -177,8 +214,11 @@ if __name__ == '__main__':  # Main Run
     # Players X and O assigned to turns 1 and 0
     positions = [O, X]
 
+    ####################
+    #    GAME  LOOP    #
+    ####################
 
-    while True:  # main game loop
+    while True:  
 
         # Table layout by default every game
         table = [
@@ -192,8 +232,16 @@ if __name__ == '__main__':  # Main Run
                 empty, empty, empty
             ]
         ]
+        
+        ####################
+        #    MAIN  MENU    #
+        ####################
 
         turn = main_menu()  # gets the starting turn of the player.
+
+        ####################
+        #   INSTRUCTIONS   #
+        ####################
 
         # Prompt Instructions of the game.
         input(
@@ -209,7 +257,10 @@ if __name__ == '__main__':  # Main Run
            \n\nPress Enter to continue :: "
            )
         
-        # Game start loop.
+        ####################
+        #    GAME START    #
+        ####################
+
         while True:
 
             # Display the table.
