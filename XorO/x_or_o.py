@@ -11,12 +11,8 @@ def display_table(table:Table) -> None:
     '''{Displays a Table} in a clean format:
     - Table'''
     
-
-    print(f'\no-----o-----o-----o\
-            \n| {"0 0" if table[0][0] == empty else f" {table[0][0]} "} | {"0 1" if table[0][1] == empty else f" {table[0][1]} "} | {"0 2" if table[0][2] == empty else f" {table[0][2]} "} |\
-            \n| {"1 0" if table[1][0] == empty else f" {table[1][0]} "} | {"1 1" if table[1][1] == empty else f" {table[1][1]} "} | {"1 2" if table[1][2] == empty else f" {table[1][2]} "} |\
-            \n| {"2 0" if table[2][0] == empty else f" {table[2][0]} "} | {"2 1" if table[2][1] == empty else f" {table[2][1]} "} | {"2 2" if table[2][2] == empty else f" {table[2][2]} "} |\
-            \no-----o-----o-----o')
+    # Just string joins and list Comprehension Magic.
+    print(''.join(['o-----o-----o-----o\n'] + [''.join([f'| {rdx} {cdx} ' if row[cdx] == empty else f'|  {row[cdx]}  ' for cdx in range(3) ] + ['|\no-----o-----o-----o\n'])for rdx, row in enumerate(table)]))
     
 
 ################################
