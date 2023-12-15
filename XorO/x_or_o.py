@@ -271,6 +271,7 @@ if __name__ == '__main__':  # Main Run
             # Get user input.
             user_input = input(f"it's {positions[turn]}'s turn :: ")
 
+            # If user wants to quit at any point of time.
             match user_input.lower():
                 case 'quit': exit('\033c\no========-----========o\n| Hope you had fun :> |\no========-----========o\n\n')
                 case 'menu': break
@@ -282,7 +283,7 @@ if __name__ == '__main__':  # Main Run
             if interpretted[0] == True:
                 table_data = placer(turn, interpretted[1], table)
 
-                # if there's no space ie False is returned for first item.
+                # if there's no space ie False is returned for first item. Show error
                 if table_data[0] == False:
                     input(f"There is no empty space on {interpretted[1]} :: ")
                 # else if there is free space.
