@@ -13,20 +13,15 @@ def flatten(array):  # flattening a list.
 ################################
 
 
-def display_table(table: list[list]) -> None: 
+def display_table(table: list[list], title: str = '', clear:bool = False) -> None: 
     
     '''{Displays a Table} in a clean format:
-    - Table'''
+    - Table
+    - Title (not required)
+    - Clear: clears the terminal if set to [True]'''
     
-    for row in table:  # Iterate through each Row.
-        
-        for item in row:  # Iterate through each Item.
-            if item != 0:
-                print(f"| {item: ^3} ", end = '')  # The Format.
-            else:
-                print(f"|#####", end = '')
-            
-        print('|', end = '\n')  # Last part.
+    # Just string joins and list Comprehension Magic.
+    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table)-1}}o', f'|'+ f"{title: ^{6*len(table)-1}}" +'|'])]+ ['o-----'*len(table)+'o'] + [''.join([f'|#####' if row[cdx] == 0 else f'|{row[cdx]: ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table)+'o'])for rdx, row in enumerate(table)]))
 
 
 ################################
@@ -251,7 +246,7 @@ Enter Option >> '''
             input(f'Wrong Value, Setting turns to {diff_text}, Press Enter to continue ::')  
             
     else: # if the user chose to Exit.
-        exit()
+        exit('\033c\no========-----========o\n| Hope you had fun :> |\no========-----========o\n\n')
     
     return (size_, size_text), (diff_, diff_text) # Retrieve the difficulty settings.
     
@@ -308,15 +303,11 @@ def get_input(table: list[list], size: str, diff: str) -> list[int]:
     - Difficulty Name.'''
     
     possibles = flatten(table)  # list of possible items.
-    des_len = 6*len(table)-1
-    des_char = '-'*des_len
     
     # Display the table.
     print(f'\033cSize [{size}]: Difficulty [{diff}]: Table:\n')
     
-    print(f'o{des_char}o')
     display_table(table)
-    print(f'o{des_char}o')
     
     move_nums = input("\nEnter the number(s) you want to move: ")  
     
@@ -354,9 +345,7 @@ def get_input(table: list[list], size: str, diff: str) -> list[int]:
             # Display the table.
             print(f'\033cSize [{size}]: Difficulty [{diff}]: Table:\n')
             
-            print(f'o{des_char}o')
-            display_table(table)
-            print(f'o{des_char}o')
+            display_table(table, clear=True)
             
             # Ask for re-input.
             move_nums = input("\nError: Correctly enter the number(s) you want to move: ")
@@ -423,15 +412,7 @@ if __name__ == "__main__":
         ####################
 
         # Display the One time Winning state and Current State.
-        des_len:int = (6*len(win_Table))-1
-        des_char = '-'*des_len
-        
-        win = 'Winning_State'
-        print('\033c')
-    
-        print(f'o{win:-^{des_len}}o')
-        display_table(win_Table)
-        print(f'o{des_char}o')
+        display_table(win_Table, 'Winning_State', True)
         
         input('\nINSTRUCTIONS: You can type: 5 7 15 1           \
                 \nTo move all those numbers together.           \
@@ -466,7 +447,7 @@ if __name__ == "__main__":
         # Ask if they want to Re-play.
         if nums == 'MENU' or input('Press Enter to Return to Main Menu or type anything to leave :: ') == '': 
             pass
-        else: break
+        else: exit('\033c\no========-----========o\n| Hope you had fun :> |\no========-----========o\n\n')
         
     
     

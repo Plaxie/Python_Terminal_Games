@@ -6,14 +6,16 @@ Table = list[list[str]]
 ################################
 
 
-def display_table(table:Table) -> None:
+def display_table(table: list[list], title: str = '', clear:bool = False) -> None: 
     
     '''{Displays a Table} in a clean format:
-    - Table'''
+    - Table
+    - Title (not required)
+    - Clear: clears the terminal if set to [True]'''
     
     # Just string joins and list Comprehension Magic.
-    print(''.join(['o-----'*len(table)+'o\n'] + [''.join([f'| {rdx} {cdx} ' if row[cdx] == empty else f'|  {row[cdx]}  ' for cdx in range(len(row)) ] + ['|\n'+'o-----'*len(table)+'o\n'])for rdx, row in enumerate(table)]))
-    
+    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table)-1}}o', f'|'+ f"{title: ^{6*len(table)-1}}" +'|'])]+ ['o-----'*len(table)+'o'] + [''.join([f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table)+'o'])for rdx, row in enumerate(table)]))
+
 
 ################################
 #     INPUT FIXED FUNCTION     #
@@ -164,6 +166,8 @@ def main_menu() -> bool:
                 \n|      1. Start      |\
                 \n|      2. Exit       |\
                 \n|                    |\
+                \n|     By  PLAXIE     |\
+                \n|                    |\
                 \no=======------=======o\
                 \n      Input :: "
             )
@@ -180,6 +184,8 @@ def main_menu() -> bool:
                 \n|                    |\
                 \n|        1. X        |\
                 \n|        2. O        |\
+                \n|                    |\
+                \n|     By  PLAXIE     |\
                 \n|                    |\
                 \no=======------=======o\
                 \n      Input :: "
@@ -204,7 +210,7 @@ def main_menu() -> bool:
 if __name__ == '__main__':  # Main Run
 
     # Game Variables
-    X, O, empty = 'X', 'O', ' '
+    X, O, empty = 'X', 'O', ''
 
 
     # Players X and O assigned to turns 1 and 0
@@ -260,8 +266,7 @@ if __name__ == '__main__':  # Main Run
         while True:
 
             # Display the table.
-            print('\033c')
-            display_table(table)
+            display_table(table, 'X / O', clear=True)
             
             # Get user input.
             user_input = input(f"it's {positions[turn]}'s turn :: ")
@@ -290,9 +295,8 @@ if __name__ == '__main__':  # Main Run
                     if checkfortriples(table):
 
                         # if won then display for the last move and prompt win.
-                        print('\033c')
-                        display_table(table)
-                        input(f"\n{positions[turn]} has won the Game!")
+                        display_table(table, 'X / O', clear=True)
+                        input(f"\nPlayer :{positions[turn]}: Has won the Game!")
                         break  # leave the start loop.
 
                     # swtich turn.
