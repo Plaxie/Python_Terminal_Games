@@ -29,7 +29,7 @@ def display_menu(options: list|tuple, title: str = '', credit: str = '', version
     Title = '\n'.join(
         [
             true_divider,
-            f'o{title: ^{size}}o',
+            f'|{title: ^{size}}|',
             true_divider + '\n'
         ]
     )
@@ -58,7 +58,7 @@ def display_menu(options: list|tuple, title: str = '', credit: str = '', version
         ]
     )
 
-    print(Options, Credit, sep ='')
+    print(Title, Options, Credit, sep ='')
 
     
 
