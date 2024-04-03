@@ -5,6 +5,10 @@ from types import FunctionType
 
 print('\033c')
 
+S = 'S'
+O = 'O'
+X = ' '
+
 ver= 'v1.0'
 
 #############################################
@@ -266,12 +270,35 @@ def main_menu():
 #              LOGIC FUNCTIONS              #
 #############################################
 
+def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
+
+    '''Interprets a given string of input to return the {correct format for input} using:
+    - inputed string'''
+
+    string = "".join(string.split())  # Removes any spaces if given.
+
+    # if the len of the string is beyond 2 characters then return an error.
+    if len(string) != 2: return False, f"Move [{string}] is Invalid!"   
+
+    try:  # try to make int ...
+        row, column = int(string[0]), int(string[1])
+
+    except ValueError:  # if not return an error.
+        return False, f"Move [{string[0]}][{string[1]}] are Invalid!"
+
+    if valid_move(row, column):  # check if it's a valid move to the size of the 3x3 table.
+        return True, (row, column) # if valid then return in usable format.
+
+    else:  # if not then return an error.
+        return False, f"Move [{row}][{column}] are Invalid!"
+
 
 
 
 #############################################
-#              TABLE FUNCTIONS              #
+#             DISPLAY FUNCTIONS             #
 #############################################
+
 
 def display_table(table: list[list], title: str = '', clear:bool = False) -> None: 
     
@@ -281,8 +308,21 @@ def display_table(table: list[list], title: str = '', clear:bool = False) -> Non
     - Clear: clears the terminal if set to [True]'''
     
     # Just string joins and list Comprehension Magic.
-    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table)-1}}o', f'|'+ f"{title: ^{6*len(table)-1}}" +'|'])]+ ['o-----'*len(table)+'o'] + [''.join([f'|#####' if row[cdx] == 0 else f'|{row[cdx]: ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table)+'o'])for rdx, row in enumerate(table)]))
+    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table[0])-1}}o', f'|'+ f"{title: ^{6*len(table[0])-1}}" +'|'])]+ ['o-----'*len(table[0])+'o'] + [''.join([f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table[0])+'o'])for rdx, row in enumerate(table)]))
+
+#############################################
+#              TABLE FUNCTIONS              #
+#############################################
+    
+def create_empty_table(length:int, width:int) -> list[list[str]]:
+
+    return [[X for cols in range(length)] for rows in range(width)]
+
 
 
 if __name__ == '__main__':
-    main_menu()
+    # main_menu()
+
+    display_table(create_empty_table(6,5))
+    display_table(create_empty_table(3,5))
+    print(interpretor('12'))
