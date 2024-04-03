@@ -22,7 +22,7 @@ def display_table(table: list[list], title: str = '', clear:bool = False) -> Non
 ################################
 
 
-def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
+def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int,  int]]:
 
     '''Interprets a given string of input to return the {correct format for input} using:
     - inputed string'''
@@ -50,7 +50,7 @@ def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
 ################################
 
 
-def placer(current_turn: bool, coords: tuple[int], table: Table) -> tuple[bool, Table]:
+def placer(current_turn: bool, coords: tuple[int, int], table: Table) -> tuple[bool, Table]:
 
     '''{Places the current turn's selected position} on the table:
     - Current turn set in the beginning [0,1]
@@ -281,7 +281,7 @@ if __name__ == '__main__':  # Main Run
 
             # if input is correct, then try placing the given coords on the table.
             if interpretted[0] == True:
-                table_data = placer(turn, interpretted[1], table)
+                table_data = placer(turn, interpretted[1], table) # type: ignore
 
                 # if there's no space ie False is returned for first item. Show error
                 if table_data[0] == False:

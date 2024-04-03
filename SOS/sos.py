@@ -129,7 +129,7 @@ def get_input(
         # while the inputs are incorrect retry for input.
         while True:
             try:
-                if func: Dispfc(f_o, f_t, f_c, f_v, f_bb, f_cl, f_s, f_d) # unbound: ignore
+                if func: Dispfc(f_o, f_t, f_c, f_v, f_bb, f_cl, f_s, f_d) # type: ignore
                 match type_list[idx]:  # Check if type of the current variable is...
                     case 'int':  # then try to convert to int, if error try again, else break
                         out = int(input(inputformat('Integer', message, size)))
@@ -270,7 +270,7 @@ def main_menu():
 #              LOGIC FUNCTIONS              #
 #############################################
 
-def interpretor(string: str) -> tuple[bool, str | tuple[int]]:
+def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
 
     '''Interprets a given string of input to return the {correct format for input} using:
     - inputed string'''

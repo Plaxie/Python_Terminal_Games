@@ -112,7 +112,7 @@ def item_finder(item, table: list[list]):
         return False, False
 
 
-def check_empty(index: tuple[int], table: list[list]) -> tuple[tuple,bool]:
+def check_empty(index: tuple[int, int], table: list[list]) -> tuple[tuple,bool]:
     
     '''Checks for an {Empty Spot: 0} around the index in the Table provided:
     - Index to search around
@@ -152,7 +152,7 @@ def check_empty(index: tuple[int], table: list[list]) -> tuple[tuple,bool]:
 #       SOLVER FUNCTION        #
 ################################
 
-def main_menu() -> tuple[tuple[int, str]]:
+def main_menu() -> tuple[tuple[int, str], tuple[int, str]]:
     
     '''A Main Menu function to get the {inputs of difficulty and size} of the board.'''
     
@@ -295,7 +295,7 @@ def multiply(numstring: str) -> str:
     return result * int(multiplier)
        
 
-def get_input(table: list[list], size: str, diff: str) -> list[int]:
+def get_input(table: list[list], size: str, diff: str) -> list[int] | str:
     
     '''Gets the {input as a string of seperated integers} and returns a list of nums:
     - The Table to know only possible nums and display the table.
@@ -436,7 +436,7 @@ if __name__ == "__main__":
             if nums == 'MENU':
                 break
 
-            Table = nums_mover(nums, Table)  # Move the moves
+            Table = nums_mover(nums, Table)  # type: ignore # Move the moves
 
             if Table == win_Table:  # If the Table is in win condition state.
                 
