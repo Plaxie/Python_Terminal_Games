@@ -2,32 +2,40 @@
 from pyclbr import Function
 from types import FunctionType
 
+from numpy import empty
+
 
 print('\033c')
 
-S = 'S'
-O = 'O'
-X = ' '
-
 ver= 'v1.0'
+Table = list[list[str]]
 
 #############################################
 #       GRAPHICS AND INPUT FUNCTIONS        #
 #############################################
 
 
-
-def display_menu(options: list|tuple, title: str = '', credit: str = '', version:str = ver, bottomborder: bool = True, clear = False, size:int = 20, divider:int = 1) -> None:
+def display_menu(
+        options: list|tuple, 
+        title: str = '', 
+        credit: str = '', 
+        version:str = ver, 
+        bottomborder: bool = True, 
+        clear = False, 
+        size:int = 20, 
+        divider:int = 1
+        ) -> None:
 
     '''Displays a Menu or Page in a fixed format that contains: Title, Options, Credit and version with:-
     - sections: options [required], title, credit, version
     - elements: size (page size), divider (space between sections)'''
 
     # alligned numbers for each option
-    options = [f'[{idx}] {opt}' for idx, opt in enumerate(options, start=1)]
+    options = [f'[{idx}] {opt}' for idx, opt in enumerate(options, start=1)] if options != [] else ['']
     
     # longest string from all the elements
     longest_complete = (sorted([version + '   ' + credit] + [title] + options, key=len))[-1]
+
     # longest string in the options for center allignment
     longest_options = (sorted(options, key=len))[-1]
 
@@ -83,12 +91,12 @@ def display_menu(options: list|tuple, title: str = '', credit: str = '', version
 
 
 def get_input(
-        display_func: Function,
+        display_func: FunctionType,
+        argsforfunc: list|tuple,
         var_names: list|tuple,
         type_list: list|tuple,
         inside: list|tuple = [],
-        size: int = 20, 
-        argsforfunc = (None,)
+        size: int = 20
         ) -> list|tuple:
 
     '''Get's Input of specified variables with correct types in a fixed format of size:
@@ -129,33 +137,40 @@ def get_input(
         # while the inputs are incorrect retry for input.
         while True:
             try:
-                if func: Dispfc(f_o, f_t, f_c, f_v, f_bb, f_cl, f_s, f_d) # type: ignore
+                if func: Dispfc(f_o, f_t, f_c, f_v, f_bb, f_cl, f_s, f_d)
                 match type_list[idx]:  # Check if type of the current variable is...
                     case 'int':  # then try to convert to int, if error try again, else break
                         out = int(input(inputformat('Integer', message, size)))
-                        if out == '0': out = 0
-                        if out not in inside:  
+                        if inside == [None]:
+                            break
+                        elif out not in inside:  
                             raise ValueError()  # Raise a value error for an invalid input.
                         else:
                             break
 
                     case 'str':  # then try to convert to string, if empty try again, else break
                         out = str(input(inputformat('Words', message, size)))
-                        if out == '' or out not in inside:  
+                        if inside == [None]:
+                            break
+                        elif out == '' or out not in inside:  
                             raise ValueError()  # Raise a value error for an empty string or an invalid input.
                         else:
                             break
 
                     case 'bool':  # then try to convert to boolean, if error try again, else break
                         out = bool(input(inputformat('True/False', message, size)))
-                        if out not in inside:  
+                        if inside == [None]:
+                            break
+                        elif out not in inside:  
                             raise ValueError()  # Raise a value error for an invalid input.
                         else:
                             break
                     
                     case 'float':  # then try to convert to float, if error try again, else break
                         out = float(input(inputformat('Decimal', message, size)))
-                        if out not in inside:  
+                        if inside == [None]:
+                            break
+                        elif out not in inside:  
                             raise ValueError()  # Raise a value error for  an invalid input.
                         else:
                             break
@@ -167,8 +182,6 @@ def get_input(
 
     # Retrieve all the inputs.
     return results
-
-
 
 
 def inputformat(input_hint: str, message: str, size = 20) -> str:
@@ -217,6 +230,23 @@ def inputformat(input_hint: str, message: str, size = 20) -> str:
 
     return page
 
+def custom_size() -> int: # Your own table size!
+
+    size: int = get_input(
+        display_menu, # type: ignore
+        ([], 'Custom Size', 'Positives Only', ver, False, True, 40, 1),
+        [
+            'Enter the size of choice:'
+        ], ['int'], [None], 40
+    )[0]
+
+    return size if size >= 3 else 3
+
+
+#############################################
+#     DECLARATIONS OF: GLOBAL VARIABLES     #
+#############################################
+
 
 messages = [
     'Enter the Integer needed as mentione above for the following execution',
@@ -227,48 +257,66 @@ messages = [
 
 types = ['int', 'str', 'bool', 'float']
 
-
-# display_menu(options, title, 'By Plaxie', ver, False, 30)
-# choice = get_input(
-#     display_menu, # type: ignore
-
-#     [
-#         'Enter the option choice'
-#     ], ['int'], [1,2], 30,
-
-#     (options, title, 'By Plaxie', ver, False, True, 30, 1)
-# )
+S = 'S'
+O = 'O'
+empty = ' '
 
 #############################################
 #            MAINLOOP FUNCTIONS             #
 #############################################
 
-def main_menu():
+def main_menu() -> tuple[int, str]:
 
-    choice = get_input(
+    choice: int = get_input(
         display_menu, # type: ignore
+        (['Start', 'Exit'], 'Main Menu', 'By Plaxie', ver, False, True, 30, 1),
         [
             'Enter the option choice'
-        ], ['int'], [1,2], 30, 
+        ], ['int'], [1,2], 30   
+    )[0]
 
-        (['Start', 'Exit'], 'Main Menu', 'By Plaxie', ver, False, True, 30, 1)
-    )
+    if choice == 2: exit()
 
-    if choice == [2]: exit()
-
-    choice = get_input(
+    choice: int = get_input(
         display_menu, # type: ignore
+        (['3x3', '4x4', '5x5', '10x10', 'Custom!'], 'Size', 'By Plaxie', ver, False, True, 30, 1),
         [
             'Enter the option choice'
-        ], ['int'], [1,2], 30, 
+        ], ['int'], [1,2,3,4,5], 30
+    )[0]
 
-        (['3x3', '4x4', '5x5', '10x10', 'Custom!'], 'Size', 'By Plaxie', ver, False, True, 30, 1)
-    )
+    table_size = custom_size() if choice == 5 else None
+
+    return [3, 4, 5, 10, table_size][choice-1], ['3x3', '4x4', '5x5', '10x10', f'{table_size}x{table_size}'][choice-1]
 
 
 #############################################
 #              LOGIC FUNCTIONS              #
 #############################################
+
+def valid_move(args, size: int) -> bool:
+
+    '''Checks if the given args are {valid for a table of size 3x3}:
+    - Arguments of index position'''
+
+    valid = range(size)  # Valid indexes (0,1,2)
+
+    for move in args:  # check each argument.
+        if move not in valid:  # if not valid then return False.
+            return False
+    else:  # if all are valid then return True.
+        return True
+
+def valid_position(row: int, column: int, table: Table) -> bool:
+
+    '''Checks if the {position in the given place is empty}:
+    - Row index
+    - Column index
+    - Table to check in'''
+    
+    if table[row][column] == empty:  # check if empty.
+        return True # return True if empty.
+    return False # else return False.
 
 def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
 
@@ -293,8 +341,6 @@ def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
         return False, f"Move [{row}][{column}] are Invalid!"
 
 
-
-
 #############################################
 #             DISPLAY FUNCTIONS             #
 #############################################
@@ -302,13 +348,14 @@ def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
 
 def display_table(table: list[list], title: str = '', clear:bool = False) -> None: 
     
-    '''{Displays a Table} in a clean format:
+    '''{Displays a Table} in a clean format: 
     - Table
     - Title (not required)
     - Clear: clears the terminal if set to [True]'''
     
     # Just string joins and list Comprehension Magic.
-    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table[0])-1}}o', f'|'+ f"{title: ^{6*len(table[0])-1}}" +'|'])]+ ['o-----'*len(table[0])+'o'] + [''.join([f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table[0])+'o'])for rdx, row in enumerate(table)]))
+    print('\n'.join(['\033c' if clear else ''] + 
+                    [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table[0])-1}}o', f'|'+ f"{title: ^{6*len(table[0])-1}}" +'|'])] + ['o-----'*len(table[0])+'o'] + [''.join([f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table[0])+'o'])for rdx, row in enumerate(table)]))
 
 #############################################
 #              TABLE FUNCTIONS              #
@@ -316,13 +363,20 @@ def display_table(table: list[list], title: str = '', clear:bool = False) -> Non
     
 def create_empty_table(length:int, width:int) -> list[list[str]]:
 
-    return [[X for cols in range(length)] for rows in range(width)]
+    return [[empty for cols in range(length)] for rows in range(width)]
 
 
 
 if __name__ == '__main__':
-    # main_menu()
+    # get the size for the table from main menu.
+    size = main_menu()  # tuple[size:int, size_lable:str]
 
-    display_table(create_empty_table(6,5))
-    display_table(create_empty_table(3,5))
-    print(interpretor('12'))
+    # create two empty tables of selected size.
+    table = create_empty_table(size[0], size[0])
+    point_table = create_empty_table(size[0], size[0])
+
+
+    # display current table
+    display_table(table, f'SOS : {size[1]} Table')
+
+
