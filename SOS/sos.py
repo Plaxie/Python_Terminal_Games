@@ -1,14 +1,31 @@
-
-from pyclbr import Function
 from types import FunctionType
-
-from numpy import empty
-
 
 print('\033c')
 
+
+#############################################
+#     DECLARATIONS OF: GLOBAL VARIABLES     #
+#############################################
+
+
+messages = [
+    'Enter the Integer needed as mentione above for the following execution',
+    'Enter the needed String to operate without further hindrance',
+    'Are you Human?',
+    'What is the value of pi, a mathematical constant used to find the circumference, area and volume of sperical objects'
+]
+
+types = ['int', 'str', 'bool', 'float']
+
+S = 'S'
+O = 'O'
+empty = ' '
+
+players = [1, 2]
+
 ver= 'v1.0'
 Table = list[list[str]]
+input_infolength = 52
 
 #############################################
 #       GRAPHICS AND INPUT FUNCTIONS        #
@@ -184,12 +201,13 @@ def get_input(
     return results
 
 
-def inputformat(input_hint: str, message: str, size = 20) -> str:
+def inputformat(input_hint: str, message: str, size = 20, centre: bool = False) -> str:
 
     '''Formats for input:
     - input hint
     - message to display
-    - layout size'''
+    - layout size
+    - centre the text: T/F'''
 
     # declaring few variables for format calculations
     stringtoformat = message
@@ -220,7 +238,7 @@ def inputformat(input_hint: str, message: str, size = 20) -> str:
             f'o{'':-^{size}}o',
             '\n'.join(
                 [
-                    f'| {strings: <{size-2}} |' for strings in stringparts
+                    (f'| {strings: ^{size-2}} |' if centre else f'| {strings: <{size-2}} |') for strings in stringparts
                 ]
             ),
             f'o{'':-^{size}}o',
@@ -230,42 +248,37 @@ def inputformat(input_hint: str, message: str, size = 20) -> str:
 
     return page
 
-def custom_size() -> int: # Your own table size!
+def custom_size() -> tuple[int, int]: # Your own table size!
 
-    size: int = get_input(
+    cols: int = get_input(
         display_menu, # type: ignore
-        ([], 'Custom Size', 'Positives Only', ver, False, True, 40, 1),
+        ([], 'Custom Size: Length (Min|Max:3|100)', 'Positives Only', ver, False, True, 40, 1),
         [
             'Enter the size of choice:'
         ], ['int'], [None], 40
     )[0]
 
-    return size if size >= 3 else 3
+    cols = 3 if cols < 3 else cols
+    cols = 100 if cols > 100 else cols
 
+    rows: int = get_input(
+        display_menu, # type: ignore
+        ([], 'Custom Size: Height (Min|Max:1|100)', 'Positives Only', ver, False, True, 40, 1),
+        [
+            'Enter the size of choice:'
+        ], ['int'], [None], 40
+    )[0]
 
-#############################################
-#     DECLARATIONS OF: GLOBAL VARIABLES     #
-#############################################
+    rows = 1 if rows < 1 else rows
+    rows = 100 if rows > 100 else rows
 
-
-messages = [
-    'Enter the Integer needed as mentione above for the following execution',
-    'Enter the needed String to operate without further hindrance',
-    'Are you Human?',
-    'What is the value of pi, a mathematical constant used to find the circumference, area and volume of sperical objects'
-]
-
-types = ['int', 'str', 'bool', 'float']
-
-S = 'S'
-O = 'O'
-empty = ' '
+    return rows, cols
 
 #############################################
 #            MAINLOOP FUNCTIONS             #
 #############################################
 
-def main_menu() -> tuple[int, str]:
+def main_menu() -> tuple[tuple[int,int], str]:
 
     choice: int = get_input(
         display_menu, # type: ignore
@@ -285,9 +298,9 @@ def main_menu() -> tuple[int, str]:
         ], ['int'], [1,2,3,4,5], 30
     )[0]
 
-    table_size = custom_size() if choice == 5 else None
+    table_size = custom_size() if choice == 5 else [None]
 
-    return [3, 4, 5, 10, table_size][choice-1], ['3x3', '4x4', '5x5', '10x10', f'{table_size}x{table_size}'][choice-1]
+    return [3, 4, 5, 10, table_size][choice-1], ['3x3', '4x4', '5x5', '10x10', f'{table_size[0]}x{table_size[1]}'][choice-1]
 
 
 #############################################
@@ -299,7 +312,7 @@ def valid_move(args, size: int) -> bool:
     '''Checks if the given args are {valid for a table of size 3x3}:
     - Arguments of index position'''
 
-    valid = range(size)  # Valid indexes (0,1,2)
+    valid = range(size)  # Valid indexes (0, 1, 2, ...)
 
     for move in args:  # check each argument.
         if move not in valid:  # if not valid then return False.
@@ -323,16 +336,16 @@ def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
     '''Interprets a given string of input to return the {correct format for input} using:
     - inputed string'''
 
-    string = "".join(string.split())  # Removes any spaces if given.
+    coords_item = string.split()
 
     # if the len of the string is beyond 2 characters then return an error.
-    if len(string) != 2: return False, f"Move [{string}] is Invalid!"   
+    if len(coords_item) != 2: return False, f"Move [{coords_item}] is Invalid!"   
 
     try:  # try to make int ...
-        row, column = int(string[0]), int(string[1])
+        row, column = int(coords_item[0]), int(coords_item[1])
 
     except ValueError:  # if not return an error.
-        return False, f"Move [{string[0]}][{string[1]}] are Invalid!"
+        return False, f"Move [{coords_item[0]}][{coords_item[1]}] are Invalid!"
 
     if valid_move(row, column):  # check if it's a valid move to the size of the 3x3 table.
         return True, (row, column) # if valid then return in usable format.
@@ -346,7 +359,7 @@ def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
 #############################################
 
 
-def display_table(table: list[list], title: str = '', clear:bool = False) -> None: 
+def display_table(table: list[list], title: str = '', clear:bool = False, padding:int = 0) -> None: 
     
     '''{Displays a Table} in a clean format: 
     - Table
@@ -354,8 +367,7 @@ def display_table(table: list[list], title: str = '', clear:bool = False) -> Non
     - Clear: clears the terminal if set to [True]'''
     
     # Just string joins and list Comprehension Magic.
-    print('\n'.join(['\033c' if clear else ''] + 
-                    [f'' if title == '' else '\n'.join([f'o{"":-^{6*len(table[0])-1}}o', f'|'+ f"{title: ^{6*len(table[0])-1}}" +'|'])] + ['o-----'*len(table[0])+'o'] + [''.join([f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + 'o-----'*len(table[0])+'o'])for rdx, row in enumerate(table)]))
+    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'{"": ^{padding}}o{"":-^{6*len(table[0])-1}}o', f'{"": ^{padding}}|'+ f"{title: ^{6*len(table[0])-1}}" +'|'])] + [f'{"": ^{padding}}' + 'o-----'*len(table[0])+'o'] + [''.join([f'{"": ^{padding}}'] + [f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + f'{"": ^{padding}}' + f'o-----'*len(table[0])+'o'])for rdx, row in enumerate(table)]))
 
 #############################################
 #              TABLE FUNCTIONS              #
@@ -365,18 +377,47 @@ def create_empty_table(length:int, width:int) -> list[list[str]]:
 
     return [[empty for cols in range(length)] for rows in range(width)]
 
+def find_middle(table_size:int, find_middle_of:int) -> int:
+    global input_infolength
 
+    mid = (find_middle_of-(table_size*6))
+    if mid > 3: return (mid//2)
+    else: 
+        input_infolength = (table_size*6)-1
+        return 0
 
 if __name__ == '__main__':
-    # get the size for the table from main menu.
-    size = main_menu()  # tuple[size:int, size_lable:str]
 
-    # create two empty tables of selected size.
-    table = create_empty_table(size[0], size[0])
-    point_table = create_empty_table(size[0], size[0])
+    # Main game loop
+    while True:
+
+        turn = 0
+        input_infolength = 52
+
+        # get the size for the table from main menu.
+        size, label = main_menu()  # tuple[size:int, size_label:str]
+
+        # create two empty tables of selected size.
+        table = create_empty_table(size[1], size[0])  # what the player can see
+        point_table = create_empty_table(size[1], size[0])  # what the point logic sees 
+
+        padding_table = find_middle(size[1], input_infolength)
+
+        # Play loop
+        while True: 
+            print('\033c') # clear
+
+            # display current table.
+            display_table(table, f'SOS : {label} Table', False, padding_table)
+
+            # input for Player X:
+            position = input(inputformat('Double-Integer-String : "0 0 X"', 
+                                        f'Player [{players[turn]}]: Select Position to drop your letter', 
+                                         input_infolength, True))
+            
 
 
-    # display current table
-    display_table(table, f'SOS : {size[1]} Table')
+
+
 
 
