@@ -1,4 +1,4 @@
-from types import FunctionType
+from typing import Callable
 
 print('\033c')
 
@@ -19,12 +19,18 @@ types = ['int', 'str', 'bool', 'float']
 
 S = 'S'
 O = 'O'
+s = '$'
+o = 'Ø'
 empty = ' '
 
-players = [1, 2]
+
+
+players = ['X', 'Y']
 
 ver= 'v1.0'
 Table = list[list[str]]
+Coordinates = tuple[int, int]
+
 input_infolength = 52
 
 #############################################
@@ -108,7 +114,7 @@ def display_menu(
 
 
 def get_input(
-        display_func: FunctionType,
+        display_func: Callable,
         argsforfunc: list|tuple,
         var_names: list|tuple,
         type_list: list|tuple,
@@ -117,12 +123,13 @@ def get_input(
         ) -> list|tuple:
 
     '''Get's Input of specified variables with correct types in a fixed format of size:
+    - function to start with (usually a display page: Must provide all arguments)
+    - Args for the above function
     - Variable Names [list of strings]
     - Types [list of strings] (must be equal length as var_names)
     - Inside [list of types that must be in the input for specific inputs]
-    - Size [int] (Format page size)
-    - Clear: To clear the terminal
-    - function to start with (usually a display page: Must provide all arguments)''' 
+    - Size [int] (Format page size)'''
+
 
     func = False
 
@@ -248,29 +255,27 @@ def inputformat(input_hint: str, message: str, size = 20, centre: bool = False) 
 
     return page
 
-def custom_size() -> tuple[int, int]: # Your own table size!
-
-    cols: int = get_input(
-        display_menu, # type: ignore
-        ([], 'Custom Size: Length (Min|Max:3|100)', 'Positives Only', ver, False, True, 40, 1),
-        [
-            'Enter the size of choice:'
-        ], ['int'], [None], 40
-    )[0]
-
-    cols = 3 if cols < 3 else cols
-    cols = 100 if cols > 100 else cols
+def custom_size() -> Coordinates: # Your own table size!
 
     rows: int = get_input(
         display_menu, # type: ignore
-        ([], 'Custom Size: Height (Min|Max:1|100)', 'Positives Only', ver, False, True, 40, 1),
+        ([], 'Custom Size: Length (Min:3)', 'Positives Only', ver, False, True, 40, 1),
         [
             'Enter the size of choice:'
         ], ['int'], [None], 40
     )[0]
 
-    rows = 1 if rows < 1 else rows
-    rows = 100 if rows > 100 else rows
+    rows = 3 if rows < 3 else rows
+
+    cols: int = get_input(
+        display_menu, # type: ignore
+        ([], 'Custom Size: Height (Min:1)', 'Positives Only', ver, False, True, 40, 1),
+        [
+            'Enter the size of choice:' 
+        ], ['int'], [None], 40
+    )[0]
+
+    cols = 1 if cols < 1 else cols
 
     return rows, cols
 
@@ -278,10 +283,10 @@ def custom_size() -> tuple[int, int]: # Your own table size!
 #            MAINLOOP FUNCTIONS             #
 #############################################
 
-def main_menu() -> tuple[tuple[int,int], str]:
+def main_menu() -> tuple[Coordinates, str]:
 
     choice: int = get_input(
-        display_menu, # type: ignore
+        display_menu,
         (['Start', 'Exit'], 'Main Menu', 'By Plaxie', ver, False, True, 30, 1),
         [
             'Enter the option choice'
@@ -291,34 +296,34 @@ def main_menu() -> tuple[tuple[int,int], str]:
     if choice == 2: exit()
 
     choice: int = get_input(
-        display_menu, # type: ignore
+        display_menu,
         (['3x3', '4x4', '5x5', '10x10', 'Custom!'], 'Size', 'By Plaxie', ver, False, True, 30, 1),
         [
             'Enter the option choice'
         ], ['int'], [1,2,3,4,5], 30
     )[0]
 
-    table_size = custom_size() if choice == 5 else [None]
+    table_size = custom_size() if choice == 5 else [None, None]
 
-    return [3, 4, 5, 10, table_size][choice-1], ['3x3', '4x4', '5x5', '10x10', f'{table_size[0]}x{table_size[1]}'][choice-1]
+    return [(3 ,3), (4 ,4), (5, 5), (10, 10), table_size][choice-1], \
+           ['3x3', '4x4', '5x5', '10x10', f'{table_size[0]}x{table_size[1]}'][choice-1]
 
 
 #############################################
 #              LOGIC FUNCTIONS              #
 #############################################
 
-def valid_move(args, size: int) -> bool:
+def valid_move(coords, size: Coordinates) -> bool:
 
     '''Checks if the given args are {valid for a table of size 3x3}:
     - Arguments of index position'''
 
-    valid = range(size)  # Valid indexes (0, 1, 2, ...)
+    valid_row = range(size[0])  # Valid indexes (0, 1, 2, ...)
+    valid_col = range(size[1])
 
-    for move in args:  # check each argument.
-        if move not in valid:  # if not valid then return False.
-            return False
-    else:  # if all are valid then return True.
-        return True
+    if coords[0] not in valid_row: return False
+    if coords[1] not in valid_col: return False
+    return True
 
 def valid_position(row: int, column: int, table: Table) -> bool:
 
@@ -331,27 +336,33 @@ def valid_position(row: int, column: int, table: Table) -> bool:
         return True # return True if empty.
     return False # else return False.
 
-def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
+def interpretor(string: str, table_size: Coordinates) -> tuple[bool, str, str] | tuple[bool, Coordinates, str]:
 
     '''Interprets a given string of input to return the {correct format for input} using:
     - inputed string'''
 
-    coords_item = string.split()
+    if string == '': return False, f"", ''
 
-    # if the len of the string is beyond 2 characters then return an error.
-    if len(coords_item) != 2: return False, f"Move [{coords_item}] is Invalid!"   
+    coords_item:list = string.split()
+
+    character:str = str(coords_item.pop())
+
+    # if the number of coordinates is beyond 2 characters then return an error.
+    if len(coords_item) != 2 or character not in ['S', 's', 'O', 'o']: return False, f"Move [{string}] is Invalid!", character
 
     try:  # try to make int ...
         row, column = int(coords_item[0]), int(coords_item[1])
 
     except ValueError:  # if not return an error.
-        return False, f"Move [{coords_item[0]}][{coords_item[1]}] are Invalid!"
+        return False, f"Move [{coords_item[0]} {coords_item[1]} {character}] is Invalid!", character
 
-    if valid_move(row, column):  # check if it's a valid move to the size of the 3x3 table.
-        return True, (row, column) # if valid then return in usable format.
+    coordinates = (row, column)
+
+    if valid_move(coordinates, table_size):  # check if it's a valid move to the size of the table.
+        return True, (row, column), character # if valid then return in usable format.
 
     else:  # if not then return an error.
-        return False, f"Move [{row}][{column}] are Invalid!"
+        return False, f"Move [{row} {column} {character}] is Invalid!", character
 
 
 #############################################
@@ -359,7 +370,7 @@ def interpretor(string: str) -> tuple[bool, str] | tuple[bool, tuple[int, int]]:
 #############################################
 
 
-def display_table(table: list[list], title: str = '', clear:bool = False, padding:int = 0) -> None: 
+def display_table(table: list[list], title: str = '', spacing: int = 8, clear:bool = False, padding:int = 0) -> None: 
     
     '''{Displays a Table} in a clean format: 
     - Table
@@ -367,57 +378,225 @@ def display_table(table: list[list], title: str = '', clear:bool = False, paddin
     - Clear: clears the terminal if set to [True]'''
     
     # Just string joins and list Comprehension Magic.
-    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'{"": ^{padding}}o{"":-^{6*len(table[0])-1}}o', f'{"": ^{padding}}|'+ f"{title: ^{6*len(table[0])-1}}" +'|'])] + [f'{"": ^{padding}}' + 'o-----'*len(table[0])+'o'] + [''.join([f'{"": ^{padding}}'] + [f'|{ f"{rdx} {cdx}" if row[cdx] == '' else f"{row[cdx]}": ^5}' for cdx in range(len(row)) ] + ['|\n' + f'{"": ^{padding}}' + f'o-----'*len(table[0])+'o'])for rdx, row in enumerate(table)]))
+    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'{"": ^{padding}}o{"":-^{(spacing + 1) * len(table[0]) - 1}}o', f'{"": ^{padding}}|'+ f"{title: ^{(spacing + 1) * len(table[0]) - 1}}" +'|'])] + [f'{"": ^{padding}}' + ('o'+('-' * spacing)) * len(table[0]) + 'o'] + [''.join([f'{"": ^{padding}}'] + [f'|{f"{rdx: >{(spacing - 3) // 2}} {cdx: <{(spacing - 3) // 2}}" if row[cdx] == empty else f"{row[cdx]}": ^{spacing}}' for cdx in range(len(row)) ] + ['|\n' + f'{"": ^{padding}}' + ('o' + ('-' * spacing)) * len(table[0]) + 'o'])for rdx, row in enumerate(table)]))
 
 #############################################
 #              TABLE FUNCTIONS              #
 #############################################
     
-def create_empty_table(length:int, width:int) -> list[list[str]]:
+def create_empty_table(length:int, width:int) -> Table:
 
     return [[empty for cols in range(length)] for rows in range(width)]
 
-def find_middle(table_size:int, find_middle_of:int) -> int:
+
+def find_middle(table_size:int, find_middle_of:int, spacing: int) -> int:
     global input_infolength
 
-    mid = (find_middle_of-(table_size*6))
-    if mid > 3: return (mid//2)
+    total_length = table_size*(spacing+1)
+
+    mid = find_middle_of-total_length
+
+    if mid > 1: return (mid//2)
+
     else: 
-        input_infolength = (table_size*6)-1
+        input_infolength = total_length-1
         return 0
+
+
+def find_space(rows:int, cols:int) -> int:
+    rows = len(f'{rows}')
+    cols = len(f'{cols}')
+
+    return ((rows if rows > cols else cols)*2)+3
+
+
+def place(table: Table, move: Coordinates, character:str) -> Table:
+    table[move[0]][move[1]] = character.upper()
+    return table
+
+
+################################
+#       CHECK FUNCTIONS        #
+################################
+
+
+def HORIZONTALS(table: Table) -> list[str]:
+
+    '''Gets all possible horizontal lines in the table'''
+
+    result = []
+
+    for row in table:
+        result.append(''.join(row))
+
+    return result
+
+    
+def VERTICALS(table: Table) -> list[str]:
+
+    '''Gets all possible vertical lines in the table'''
+
+    result = []
+    cols = len(table[0])
+    onecol = []
+
+    for idx in range(cols):
+
+        for row in table:
+            onecol.append(row[idx])
+
+        result.append(''.join(onecol))
+        onecol = []
+        
+    return result    
+
+
+def RCROSS(table: Table) -> list[str]:
+    
+    '''Gets the cross in the table'''
+
+    result = []
+    
+    # Calculate number of rows and columns
+    rows = len(table)
+    cols = len(table[0])
+
+    # Iterate over each diagonal starting from the top-right corner
+    for i in range(cols):
+        word = ''
+        row = 0
+        col = i
+        while row < rows and col >= 0:
+            word += table[row][col]
+            row += 1
+            col -= 1
+        result.append(word)
+
+    # Iterate over each diagonal starting from the top-left corner (excluding the main diagonal)
+    for i in range(1, rows):
+        word = ''
+        row = i
+        col = cols - 1
+        while row < rows and col >= 0:
+            word += table[row][col]
+            row += 1
+            col -= 1
+        result.append(word)
+
+    return sorted(result, key=len)[2:]
+
+
+def LCROSS(table: Table) -> list[str]:
+    
+    '''Gets the cross in the table'''
+
+    result = []
+    
+    # Calculate number of rows and columns
+    rows = len(table)
+    cols = len(table[0])
+
+    # Iterate over each diagonal starting from the top-right corner
+    for i in range(cols - 1, -1, -1):
+        word = ''
+        row = 0
+        col = i
+        while row < rows and col >= 0:
+            word += table[row][col]
+            row += 1
+            col -= 1
+        result.append(word)
+
+    # Iterate over each diagonal starting from the top-left corner (excluding the main diagonal)
+    for i in range(1, rows):
+        word = ''
+        row = i
+        col = cols - 1
+        while row < rows and col >= 0:
+            word += table[row][col]
+            row += 1
+            col -= 1
+        result.append(word)
+
+    return sorted(result, key=len)[2:]
+
+
+
+def checkfor_sos(table: Table) -> tuple[bool, tuple[tuple[str, Coordinates], tuple[str, Coordinates], tuple[str, Coordinates]] | None]: # type: ignore
+
+    # Horizontal Check
+    data = HORIZONTALS(table)
+
+    for idx, line in enumerate(data):
+        match_ = line.find('SOS')
+        if match_ != -1: 
+            return True, ((s, (match_, idx)), (o, (match_, idx + 1)), (s, (match_, idx + 2)))
+    
+    # Vertical Check
+
+    data = VERTICALS(table)
+
+    for idx, line in enumerate(data):
+        match_ = line.find('SOS')
+        if match_ != -1: 
+            return True, ((s, (match_, idx)), (o, (match_, idx + 1)), (s, (match_, idx + 2)))
+    
+    # Right Across Check # LATER
+
+    # Left Across Check # LATER
+
+    return False, None
 
 if __name__ == '__main__':
 
     # Main game loop
     while True:
 
-        turn = 0
+        turn = False
+
         input_infolength = 52
 
         # get the size for the table from main menu.
-        size, label = main_menu()  # tuple[size:int, size_label:str]
+        size, label = main_menu()  # tuple[size:int,int, size_label:str]
+
+        space = find_space(size[0], size[1])
+        points = [0, 0]
+
 
         # create two empty tables of selected size.
-        table = create_empty_table(size[1], size[0])  # what the player can see
-        point_table = create_empty_table(size[1], size[0])  # what the point logic sees 
+        table = create_empty_table(size[0], size[1])  # what the player can see
+        # point_table = create_empty_table(size[0], size[1])  # what the point logic sees 
 
-        padding_table = find_middle(size[1], input_infolength)
+        padding_table = find_middle(size[0], input_infolength, space)
+        print('\033c')
 
-        # Play loop
-        while True: 
-            print('\033c') # clear
 
+        while True:
             # display current table.
-            display_table(table, f'SOS : {label} Table', False, padding_table)
+            print(f'Player X: {points[0]} | Player Y: {points[1]}\n')
+
+            display_table(table, f'SOS : {label} Table', space, False, padding_table)
 
             # input for Player X:
-            position = input(inputformat('Double-Integer-String : "0 0 X"', 
-                                        f'Player [{players[turn]}]: Select Position to drop your letter', 
-                                         input_infolength, True))
+            valid, move, character = interpretor(input(inputformat('Double-Integer-String : "0 0 X"',
+                                        f'Player [{players[turn]}]: Select Position to drop your letter',
+                                        input_infolength, True)), size)
             
+            if valid: 
+                if valid_position(move[0], move[1], table): # type: ignore
+                    table = place(table, move, character) # type: ignore
+                    turn = not turn
+                else: 
+                    input(f"Move [{move[0]} {move[1]} {character}] is Invalid!")
+            else: input(move)
 
-
-
+            check = checkfor_sos(table)
+            if check[0]:
+                for coords in check[1]: # type: ignore
+                    place(table, (coords[1]), coords[0])
+                input(f"Player {players[not turn]} get's a point")
+                points[not turn] += 1
+            print('\033c')
 
 
 
