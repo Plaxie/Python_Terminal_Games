@@ -14,3 +14,6 @@ Games at the beginning will avoid using OOP completely and work with just functi
 **✅: Completed, ☑️: Incomplete, ◯: Not Begun, ❕:In mind, Don't plan to; any time soon**
 
 More Can be suggested 😅
+
+
+Short note on the games: SOS and 4R|4B, both are similar except their win-condition so both would have similar or almost the same code reutilised to accommodate 4R|4B from SOS.
