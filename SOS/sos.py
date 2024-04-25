@@ -20,16 +20,21 @@ types = ['int', 'str', 'bool', 'float']
 S = 'S'
 O = 'O'
 s = '$'
-o = 'Ø'
+o = '0'
 empty = ' '
 
 
 
 players = ['X', 'Y']
 
+possible_matches = ['SOS', '$O$', 'S0S', '$OS', 'S0$', 'S0$', '$0S']
+
 ver= 'v1.0'
 Table = list[list[str]]
 Coordinates = tuple[int, int]
+
+Coordinated_Data = tuple[str, Coordinates]
+
 
 input_infolength = 52
 
@@ -522,30 +527,59 @@ def LCROSS(table: Table) -> list[str]:
 
 
 
-def checkfor_sos(table: Table) -> tuple[bool, tuple[tuple[str, Coordinates], tuple[str, Coordinates], tuple[str, Coordinates]] | None]: # type: ignore
+def checkfor_sos(table: Table) -> list[Coordinated_Data]:
+
+    # MAX points at a time is EIGHT!!!
+    matches_found = []
 
     # Horizontal Check
     data = HORIZONTALS(table)
 
     for idx, line in enumerate(data):
-        match_ = line.find('SOS')
-        if match_ != -1: 
-            return True, ((s, (match_, idx)), (o, (match_, idx + 1)), (s, (match_, idx + 2)))
-    
+        for win_match in possible_matches:
+            match_ = line.find(win_match)
+            if match_ != -1: 
+                try: 
+                    x = table[match_][idx]; y = table[match_][idx + 1]; z = table[match_][idx + 2]
+                    matches_found.append(((s, (match_, idx)), (o, (match_, idx + 1)), (s, (match_, idx + 2))))
+                except IndexError:
+                    matches_found.append(((s, (idx, match_)), (o, (idx, match_ + 1)), (s, (idx, match_ + 2))))
     # Vertical Check
 
     data = VERTICALS(table)
 
     for idx, line in enumerate(data):
-        match_ = line.find('SOS')
-        if match_ != -1: 
-            return True, ((s, (match_, idx)), (o, (match_, idx + 1)), (s, (match_, idx + 2)))
-    
+        for win_match in possible_matches:
+            match_ = line.find(win_match)
+            if match_ != -1: 
+                try: 
+                    x = table[idx][match_]; y = table[idx + 1][match_]; z = table[idx + 2][match_]
+                    matches_found.append(((s, (idx, match_)), (o, (idx + 1, match_)), (s, (idx + 2, match_))))
+                except IndexError:
+                    matches_found.append(((s, (match_, idx)), (o, (match_ + 1, idx)), (s, (match_ + 2, idx))))
+        
     # Right Across Check # LATER
 
     # Left Across Check # LATER
 
-    return False, None
+    return matches_found
+
+
+def remove_won_matches(table: Table, list_of_cords: list[Coordinated_Data]) -> tuple[Table, int]:
+
+    points_won = 0
+
+    for remover in list_of_cords:
+        for each in remover:
+            table = place(table, each[1], each[0]) # type: ignore
+        points_won += 1
+    
+    return table, points_won
+    
+
+    
+
+
 
 if __name__ == '__main__':
 
@@ -568,12 +602,11 @@ if __name__ == '__main__':
         # point_table = create_empty_table(size[0], size[1])  # what the point logic sees 
 
         padding_table = find_middle(size[0], input_infolength, space)
-        print('\033c')
 
 
         while True:
             # display current table.
-            print(f'Player X: {points[0]} | Player Y: {points[1]}\n')
+            print(f'\033c\nPlayer X: {points[0]} | Player Y: {points[1]}\n')
 
             display_table(table, f'SOS : {label} Table', space, False, padding_table)
 
@@ -591,11 +624,12 @@ if __name__ == '__main__':
             else: input(move)
 
             check = checkfor_sos(table)
-            if check[0]:
-                for coords in check[1]: # type: ignore
-                    place(table, (coords[1]), coords[0])
-                input(f"Player {players[not turn]} get's a point")
-                points[not turn] += 1
+            
+            if len(check) > 0:
+
+                table, points_won = remove_won_matches(table, check)
+                input(f"Player {players[not turn]} get's {points_won} point{'s' if points_won > 1 else ''}")
+                points[not turn] += points_won
             print('\033c')
 
 
