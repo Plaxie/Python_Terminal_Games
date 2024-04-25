@@ -6,9 +6,11 @@ Games at the beginning will avoid using OOP completely and work with just functi
 ### Current list of games to make:
 - `X or O             ✅`
 - `Sequence Solver    ✅`
-- `S O S Board Game   ◯`
+- `S O S Board Game   ☑️`
 - `4 Red / 4 Blue     ◯`
 - `Chess              ◯`
-- `Pong               ◯`
+- `Pong               ❕`
+
+**✅: Completed, ☑️: Incomplete, ◯: Not Begun, ❕:In mind, Don't plan to; any time soon**
 
 More Can be suggested 😅
