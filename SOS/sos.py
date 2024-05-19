@@ -1,4 +1,3 @@
-from typing import Callable
 
 print('\033c')
 
@@ -9,7 +8,7 @@ print('\033c')
 
 
 messages = [
-    'Enter the Integer needed as mentione above for the following execution',
+    'Enter the Integer needed as mentioned above for the following execution',
     'Enter the needed String to operate without further hindrance',
     'Are you Human?',
     'What is the value of pi, a mathematical constant used to find the circumference, area and volume of sperical objects'
@@ -20,14 +19,16 @@ types = ['int', 'str', 'bool', 'float']
 S = 'S'
 O = 'O'
 s = '$'
-o = '0'
+o = 'ɸ'
 empty = ' '
 
 
 
 players = ['X', 'Y']
 
-possible_matches = ['SOS', '$O$', 'S0S', '$OS', 'S0$', 'S0$', '$0S']
+possible_matches = [f'{S+O+S}', f'{s+O+s}', f'{S+o+S}', f'{s+O+S}', f'{S+o+s}', f'{S+o+s}', f'{s+o+S}']
+
+possible_diagonal_matches = [f'{S+O+S}', f'{s+O+s}', f'{S+o+S}', f'{s+O+S}', f'{s+o+S}']
 
 ver= 'v1.0'
 Table = list[list[str]]
@@ -119,7 +120,7 @@ def display_menu(
 
 
 def get_input(
-        display_func: Callable,
+        display_func, # a callable object
         argsforfunc: list|tuple,
         var_names: list|tuple,
         type_list: list|tuple,
@@ -391,31 +392,53 @@ def display_table(table: list[list], title: str = '', spacing: int = 8, clear:bo
     
 def create_empty_table(length:int, width:int) -> Table:
 
+    '''{Creates an empty table} where empty = ' '
+    - length of the table
+    - width of the table
+    '''
+
     return [[empty for cols in range(length)] for rows in range(width)]
 
 
 def find_middle(table_size:int, find_middle_of:int, spacing: int) -> int:
+
+    '''Finds the middle of a line copared to a table.
+    - number of columns the table has
+    - the line of which you want to find the middle of
+    - defined spacing
+    '''
+
+    # The input field length 
     global input_infolength
 
+    # actual length of the table size with columns
     total_length = table_size*(spacing+1)
 
+    
     mid = find_middle_of-total_length
 
     if mid > 1: return (mid//2)
 
     else: 
+        # match the input length with the table length
         input_infolength = total_length-1
         return 0
 
 
 def find_space(rows:int, cols:int) -> int:
-    rows = len(f'{rows}')
-    cols = len(f'{cols}')
 
-    return ((rows if rows > cols else cols)*2)+3
+    '''Finds the space needed for a colum to fit the indices
+    - number of rows of the table
+    - number of columns in the table
+    '''
+
+    return ((rows if len(f'{rows}') > len(f'{cols}') else cols)*2)+3
 
 
 def place(table: Table, move: Coordinates, character:str) -> Table:
+
+    '''Places a character on a table with select coordinates'''
+
     table[move[0]][move[1]] = character.upper()
     return table
 
@@ -456,7 +479,7 @@ def VERTICALS(table: Table) -> list[str]:
     return result    
 
 
-def RCROSS(table: Table) -> list[str]:
+def RCROSS(table: Table) -> list[tuple[tuple[int,int], str]]:
     
     '''Gets the cross in the table'''
 
@@ -475,7 +498,7 @@ def RCROSS(table: Table) -> list[str]:
             word += table[row][col]
             row += 1
             col -= 1
-        result.append(word)
+        result.append(((row, col), word))
 
     # Iterate over each diagonal starting from the top-left corner (excluding the main diagonal)
     for i in range(1, rows):
@@ -486,14 +509,15 @@ def RCROSS(table: Table) -> list[str]:
             word += table[row][col]
             row += 1
             col -= 1
-        result.append(word)
+        result.append(((row, col), word))
 
-    return sorted(result, key=len)[2:]
+    return result
 
-
-def LCROSS(table: Table) -> list[str]:
+def LCROSS(table: Table) -> list[tuple[tuple[int,int], str]]:
     
     '''Gets the cross in the table'''
+
+    if len(table) < 3 or len(table[0]) < 3: return [] 
 
     result = []
     
@@ -510,7 +534,7 @@ def LCROSS(table: Table) -> list[str]:
             word += table[row][col]
             row += 1
             col -= 1
-        result.append(word)
+        result.append(((col + 1, row - 1), word))
 
     # Iterate over each diagonal starting from the top-left corner (excluding the main diagonal)
     for i in range(1, rows):
@@ -521,10 +545,11 @@ def LCROSS(table: Table) -> list[str]:
             word += table[row][col]
             row += 1
             col -= 1
-        result.append(word)
+        result.append(((col + 1, row - 1), word))
 
-    return sorted(result, key=len)[2:]
+    result = (result[1: len(table[0])])[::-1] + [result[0]] + result[len(table[0]):]
 
+    return result[2:-2]
 
 
 def checkfor_sos(table: Table) -> list[Coordinated_Data]:
@@ -536,29 +561,46 @@ def checkfor_sos(table: Table) -> list[Coordinated_Data]:
     data = HORIZONTALS(table)
 
     for idx, line in enumerate(data):
+
+        # check if the board has any point matches
         for win_match in possible_matches:
             match_ = line.find(win_match)
-            if match_ != -1: 
+
+            if match_ != -1: # if the match is found then: 
                 try: 
                     x = table[match_][idx]; y = table[match_][idx + 1]; z = table[match_][idx + 2]
                     matches_found.append(((s, (match_, idx)), (o, (match_, idx + 1)), (s, (match_, idx + 2))))
                 except IndexError:
                     matches_found.append(((s, (idx, match_)), (o, (idx, match_ + 1)), (s, (idx, match_ + 2))))
+    
     # Vertical Check
-
     data = VERTICALS(table)
 
     for idx, line in enumerate(data):
+        
+        # check if the board has any point matches
         for win_match in possible_matches:
             match_ = line.find(win_match)
-            if match_ != -1: 
+
+            if match_ != -1: # if the match is found then:
                 try: 
                     x = table[idx][match_]; y = table[idx + 1][match_]; z = table[idx + 2][match_]
                     matches_found.append(((s, (idx, match_)), (o, (idx + 1, match_)), (s, (idx + 2, match_))))
                 except IndexError:
                     matches_found.append(((s, (match_, idx)), (o, (match_ + 1, idx)), (s, (match_ + 2, idx))))
-        
+
     # Right Across Check # LATER
+    # data = RCROSS(table)
+
+    # for idx, line in enumerate(data):
+
+    #     for win_match in possible_diagonal_matches:
+    #         match_ = line[1].find(win_match)
+
+    #         if match_ != -1: 
+                
+
+
 
     # Left Across Check # LATER
 
@@ -601,14 +643,14 @@ if __name__ == '__main__':
         table = create_empty_table(size[0], size[1])  # what the player can see
         # point_table = create_empty_table(size[0], size[1])  # what the point logic sees 
 
-        padding_table = find_middle(size[0], input_infolength, space)
+        padding_table_size = find_middle(size[0], input_infolength, space)
 
 
         while True:
             # display current table.
             print(f'\033c\nPlayer X: {points[0]} | Player Y: {points[1]}\n')
 
-            display_table(table, f'SOS : {label} Table', space, False, padding_table)
+            display_table(table, f'SOS : {label} Table', space, False, padding_table_size)
 
             # input for Player X:
             valid, move, character = interpretor(input(inputformat('Double-Integer-String : "0 0 X"',

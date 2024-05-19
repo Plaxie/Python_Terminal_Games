@@ -1,12 +1,34 @@
-from random import randint  # For randomization.
-from itertools import chain # in order to flatten a table.
 
-def flatten(array):  # flattening a list.
-    
-    '''{Flattens any array} needs:
+seed: int
+
+def flatten(table):
+
+    '''{Flattens any 2d array} needs:
     - Array'''
+     
+    result = []
+
+    for row in table:
+        for item in row:
+            result.append(item)
     
-    return list(chain.from_iterable(array))
+    return result
+
+def randint(start, stop):
+
+    global seed
+    
+    # Linear Congruential Generator (LCG) constants
+    a = 1664525
+    c = 1013904223
+    m = 2**32
+    
+    # Generate a pseudo-random number
+    seed = (a * seed + c) % m
+    
+    # Scale the result to the desired range
+    result = start + (seed % (stop - start + 1))
+    return result
 
 ################################
 #      DISPLAY  FUNCTIONS      #
@@ -33,6 +55,8 @@ def random_table(size: int) -> list[list]:
     
     '''Provides a {Random Table} with: 
     - Table Size'''
+
+    global seed
     
     digits: list[int] = [*range(size*size)]  # a list of valid numbers.
     
@@ -45,6 +69,8 @@ def turned_table(table: list[list], turns: int= 20) -> list[list]:
     '''Provides a {Juggled Table} from Win configuration with:
     - Table Size 
     - Number of Turns'''
+
+    global seed
     
     # Increases turns to match board size difficulty.
     turns = turns * len(table)*len(table)
@@ -400,6 +426,25 @@ if __name__ == "__main__":
         
         # winning condition of a table.
         win_Table = winconfig(size_p[0])
+
+        while True:
+            # Display the One time Winning state and Current State.
+            display_table(win_Table, 'Winning_State', True)
+            try:
+                seed = int(input('                                          \
+                        \nINSTRUCTIONS: You can type: 5 7 15 1              \
+                        \nTo move all those numbers together.               \
+                        \nIf the move is valid.                             \
+                      \n\nYou can also multiply like: 1 2 * 3               \
+                        \nWhich is intepreted as: 1 2 1 2 1 2               \
+                      \n\nHint only shown once every game.                  \
+                        \nAlso type "quit" to exit                          \
+                        \nAnd type "menu" to return to main menu.           \
+                        \n------------------------------------       o------\
+                      \n\nEnter Table Seed to Continue ::            | '
+                    ))
+                break
+            except ValueError: continue
         
         if diff_p[0] == 0:  # if Random board chosen.
             Table = random_table(size_p[0])
@@ -411,19 +456,8 @@ if __name__ == "__main__":
         #   INSTRUCTIONS   #
         ####################
 
-        # Display the One time Winning state and Current State.
-        display_table(win_Table, 'Winning_State', True)
         
-        input('\nINSTRUCTIONS: You can type: 5 7 15 1           \
-                \nTo move all those numbers together.           \
-                \nIf the move is valid.                         \
-                \n\nYou can also multiply like: 1 2 * 3         \
-                \nWhich is intepreted as: 1 2 1 2 1 2           \
-                \n\nHint only shown once every game.            \
-                \nAlso type "quit" to exit                      \
-                \nAnd type "menu" to return to main menu.       \
-                \n\nPress Enter to continue.'
-            )
+            
         
         ####################
         #   SOLVE   GAME   #
