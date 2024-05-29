@@ -22,20 +22,16 @@ s = '$'
 o = 'ɸ'
 empty = ' '
 
-
-
 players = ['X', 'Y']
 
-possible_matches = [f'{S+O+S}', f'{s+O+s}', f'{S+o+S}', f'{s+O+S}', f'{S+o+s}', f'{S+o+s}', f'{s+o+S}']
-
-possible_diagonal_matches = [f'{S+O+S}', f'{s+O+s}', f'{S+o+S}', f'{s+O+S}', f'{s+o+S}']
+possible_matches = [f'{S+O+S}', f'{s+O+s}', f'{S+o+S}', f'{s+O+S}', f'{S+O+s}', f'{S+o+s}', f'{s+o+S}']
 
 ver= 'v1.0'
+
 Table = list[list[str]]
 Coordinates = tuple[int, int]
-
 Coordinated_Data = tuple[str, Coordinates]
-
+Match_Data = list[Coordinated_Data]
 
 input_infolength = 52
 
@@ -376,7 +372,7 @@ def interpretor(string: str, table_size: Coordinates) -> tuple[bool, str, str] |
 #############################################
 
 
-def display_table(table: list[list], title: str = '', spacing: int = 8, clear:bool = False, padding:int = 0) -> None: 
+def display_table(table: list[list], title: str = '', spacing: int = 8, clear:bool = False, padding:int = 0, empty = empty) -> None: 
     
     '''{Displays a Table} in a clean format: 
     - Table
@@ -479,9 +475,11 @@ def VERTICALS(table: Table) -> list[str]:
     return result    
 
 
-def RCROSS(table: Table) -> list[tuple[tuple[int,int], str]]:
+def RCROSS(table: Table) -> list[Coordinated_Data]:
     
     '''Gets the cross in the table'''
+
+    if len(table) < 3 or len(table[0]) < 3: return []
 
     result = []
     
@@ -498,7 +496,7 @@ def RCROSS(table: Table) -> list[tuple[tuple[int,int], str]]:
             word += table[row][col]
             row += 1
             col -= 1
-        result.append(((row, col), word))
+        result.append((word, (col + 1, row - 1)))
 
     # Iterate over each diagonal starting from the top-left corner (excluding the main diagonal)
     for i in range(1, rows):
@@ -509,58 +507,58 @@ def RCROSS(table: Table) -> list[tuple[tuple[int,int], str]]:
             word += table[row][col]
             row += 1
             col -= 1
-        result.append(((row, col), word))
+        result.append((word, (col + 1, row - 1)))
 
-    return result
+    return result[2:-2] if len(result) > 3 else result[1]
 
-def LCROSS(table: Table) -> list[tuple[tuple[int,int], str]]:
+def LCROSS(table: Table) -> list[Coordinated_Data]:
     
     '''Gets the cross in the table'''
 
-    if len(table) < 3 or len(table[0]) < 3: return [] 
+    if len(table) < 3 or len(table[0]) < 3: return []
 
-    result = []
-    
-    # Calculate number of rows and columns
-    rows = len(table)
-    cols = len(table[0])
+    diagonals = []
+    num_rows = len(table)
+    num_cols = len(table[0])
 
-    # Iterate over each diagonal starting from the top-right corner
-    for i in range(cols - 1, -1, -1):
-        word = ''
-        row = 0
-        col = i
-        while row < rows and col >= 0:
-            word += table[row][col]
+    # Iterate over each starting position in the first column
+    for i in range(num_rows):
+        row, col = i, 0
+        diagonal = []
+        while row < num_rows and col < num_cols:
+            diagonal.append(table[row][col])
             row += 1
-            col -= 1
-        result.append(((col + 1, row - 1), word))
+            col += 1
+        diagonals.append((''.join(diagonal), (row - 1, col- 1)))
 
-    # Iterate over each diagonal starting from the top-left corner (excluding the main diagonal)
-    for i in range(1, rows):
-        word = ''
-        row = i
-        col = cols - 1
-        while row < rows and col >= 0:
-            word += table[row][col]
+    # Iterate over each starting position in the first row (excluding the first element which has already been visited)
+    for j in range(1, num_cols):
+        row, col = 0, j
+        diagonal = []
+        while row < num_rows and col < num_cols:
+            diagonal.append(table[row][col])
             row += 1
-            col -= 1
-        result.append(((col + 1, row - 1), word))
+            col += 1
+        diagonals.append((''.join(diagonal), (row - 1, col- 1)))
 
-    result = (result[1: len(table[0])])[::-1] + [result[0]] + result[len(table[0]):]
-
-    return result[2:-2]
+    return diagonals
 
 
-def checkfor_sos(table: Table) -> list[Coordinated_Data]:
+def checkfor_sos(table: Table) -> Match_Data:
 
     # MAX points at a time is EIGHT!!!
     matches_found = []
 
-    # Horizontal Check
-    data = HORIZONTALS(table)
+    # Check DATA
 
-    for idx, line in enumerate(data):
+    H_data = HORIZONTALS(table)   
+    V_data = VERTICALS(table)
+    Rcross_data = RCROSS(table)
+    Lcross_data = LCROSS(table)
+
+    # Horizontal Check
+
+    for idx, line in enumerate(H_data):
 
         # check if the board has any point matches
         for win_match in possible_matches:
@@ -574,9 +572,8 @@ def checkfor_sos(table: Table) -> list[Coordinated_Data]:
                     matches_found.append(((s, (idx, match_)), (o, (idx, match_ + 1)), (s, (idx, match_ + 2))))
     
     # Vertical Check
-    data = VERTICALS(table)
 
-    for idx, line in enumerate(data):
+    for idx, line in enumerate(V_data):
         
         # check if the board has any point matches
         for win_match in possible_matches:
@@ -589,25 +586,41 @@ def checkfor_sos(table: Table) -> list[Coordinated_Data]:
                 except IndexError:
                     matches_found.append(((s, (match_, idx)), (o, (match_ + 1, idx)), (s, (match_ + 2, idx))))
 
-    # Right Across Check # LATER
-    # data = RCROSS(table)
+    # Right Across Check
 
-    # for idx, line in enumerate(data):
+    for info, coords in Rcross_data:
 
-    #     for win_match in possible_diagonal_matches:
-    #         match_ = line[1].find(win_match)
+        for win_match in possible_matches:
+            match_ = info.find(win_match)
 
-    #         if match_ != -1: 
-                
+            if match_ != -1:
+                x = (s, (coords[0] + match_    , coords[1] - match_    ))
+                y = (o, (coords[0] + match_ + 1, coords[1] - match_ - 1))
+                z = (s, (coords[0] + match_ + 2, coords[1] - match_ - 2))
 
+                matches_found.append((x, y, z))
 
+    # Left Across Check
 
-    # Left Across Check # LATER
+    for info, coords in Lcross_data:
+        
+
+        for win_match in possible_matches:
+            match_ = info.find(win_match)
+
+            diff = len(info) - match_ - 1
+
+            if match_ != -1:
+                x = (s, (coords[0] - diff, coords[1] - diff))
+                y = (o, (coords[0] - diff + 1, coords[1] - diff + 1))
+                z = (s, (coords[0] - diff + 2, coords[1] - diff + 2))
+
+                matches_found.append((x, y, z))
 
     return matches_found
 
 
-def remove_won_matches(table: Table, list_of_cords: list[Coordinated_Data]) -> tuple[Table, int]:
+def remove_won_matches(table: Table, list_of_cords: Match_Data) -> tuple[Table, int]:
 
     points_won = 0
 
@@ -619,7 +632,17 @@ def remove_won_matches(table: Table, list_of_cords: list[Coordinated_Data]) -> t
     return table, points_won
     
 
-    
+def check_endgame(table: Table) -> bool:
+
+    for row in table:
+        if empty in row:
+            break
+    else:
+        return True
+    return False
+
+            
+                
 
 
 
@@ -645,12 +668,17 @@ if __name__ == '__main__':
 
         padding_table_size = find_middle(size[0], input_infolength, space)
 
-
         while True:
             # display current table.
             print(f'\033c\nPlayer X: {points[0]} | Player Y: {points[1]}\n')
 
             display_table(table, f'SOS : {label} Table', space, False, padding_table_size)
+
+            if check_endgame(table):
+                end_string = f'| Player {players[points[0] < points[1]]} has WON! with points -- {players[0]}: {points[0]} | {players[1]}: {points[1]} |\n'
+                des_string = f'o{"":=^{(len(end_string) - 2)}}o\n'
+                input(''.join([des_string, end_string, des_string]))
+                break
 
             # input for Player X:
             valid, move, character = interpretor(input(inputformat('Double-Integer-String : "0 0 X"',
@@ -665,14 +693,29 @@ if __name__ == '__main__':
                     input(f"Move [{move[0]} {move[1]} {character}] is Invalid!")
             else: input(move)
 
-            check = checkfor_sos(table)
-            
-            if len(check) > 0:
+            # checking for matches
 
-                table, points_won = remove_won_matches(table, check)
+            check = checkfor_sos(table)
+            if len(check) > 0: table, points_won = remove_won_matches(table, check)
+
+            # double checking for possible double match
+
+            check = checkfor_sos(table)
+            if len(check) > 0:
+                cache = remove_won_matches(table, check)
+                table = cache[0]
+                points_won += cache[1]
+
+            try:
                 input(f"Player {players[not turn]} get's {points_won} point{'s' if points_won > 1 else ''}")
                 points[not turn] += points_won
+            except NameError:
+                continue
+
             print('\033c')
+
+            
+                
 
 
 
