@@ -372,15 +372,17 @@ def interpretor(string: str, table_size: Coordinates) -> tuple[bool, str, str] |
 #############################################
 
 
-def display_table(table: list[list], title: str = '', spacing: int = 8, clear:bool = False, padding:int = 0, empty = empty) -> None: 
+def display_table(table: list[list], title: str = '', spacing: int = 0, clear:bool = False, padding:int = 0) -> None: 
     
     '''{Displays a Table} in a clean format: 
     - Table
-    - Title (not required)
-    - Clear: clears the terminal if set to [True]'''
+    - Title (not required, can be set to '')
+    - Spacing (not required, can be set to 0)
+    - Clear: clears the terminal if set to [True]
+    - Padding for the Table from the left side'''
     
     # Just string joins and list Comprehension Magic.
-    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'{"": ^{padding}}o{"":-^{(spacing + 1) * len(table[0]) - 1}}o', f'{"": ^{padding}}|'+ f"{title: ^{(spacing + 1) * len(table[0]) - 1}}" +'|'])] + [f'{"": ^{padding}}' + ('o'+('-' * spacing)) * len(table[0]) + 'o'] + [''.join([f'{"": ^{padding}}'] + [f'|{f"{rdx: >{(spacing - 3) // 2}} {cdx: <{(spacing - 3) // 2}}" if row[cdx] == empty else f"{row[cdx]}": ^{spacing}}' for cdx in range(len(row)) ] + ['|\n' + f'{"": ^{padding}}' + ('o' + ('-' * spacing)) * len(table[0]) + 'o'])for rdx, row in enumerate(table)]))
+    print('\n'.join(['\033c' if clear else ''] + [f'' if title == '' else '\n'.join([f'{"": ^{padding}}o{"":-^{((spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3)) + 1) * len(table[0]) - 1}}o', f'{"": ^{padding}}|'+ f"{title: ^{((spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3)) + 1) * len(table[0]) - 1}}" +'|'])] + [f'{"": ^{padding}}' + ('o'+('-' * (spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3)))) * len(table[0]) + 'o'] + [''.join([f'{"": ^{padding}}'] + [f'|{f"{rdx: >{((spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3)) - 3) // 2}} {cdx: <{((spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3)) - 3) // 2}}" if row[cdx] == empty else f"{row[cdx]}": ^{(spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3))}}' for cdx in range(len(row)) ] + ['|\n' + f'{"": ^{padding}}' + ('o' + ('-' * (spacing if spacing != 0 else (((len(f'{len(table)}') if len(f'{len(table)}') > len(f'{len(table[0])}') else len(f'{len(table[0])}')) * 2) + 3)))) * len(table[0]) + 'o'])for rdx, row in enumerate(table)]))
 
 #############################################
 #              TABLE FUNCTIONS              #
@@ -423,12 +425,12 @@ def find_middle(table_size:int, find_middle_of:int, spacing: int) -> int:
 
 def find_space(rows:int, cols:int) -> int:
 
-    '''Finds the space needed for a colum to fit the indices
+    '''Finds the space needed for a column to fit the indices
     - number of rows of the table
     - number of columns in the table
     '''
 
-    return ((rows if len(f'{rows}') > len(f'{cols}') else cols)*2)+3
+    return ((len(f'{rows}') if len(f'{rows}') > len(f'{cols}') else len(f'{cols}')) * 2) + 3
 
 
 def place(table: Table, move: Coordinates, character:str) -> Table:
@@ -672,7 +674,7 @@ if __name__ == '__main__':
             # display current table.
             print(f'\033c\nPlayer X: {points[0]} | Player Y: {points[1]}\n')
 
-            display_table(table, f'SOS : {label} Table', space, False, padding_table_size)
+            display_table(table, f'SOS : {label} Table', 0, False, padding_table_size)
 
             if check_endgame(table):
                 end_string = f'| Player {players[points[0] < points[1]]} has WON! with points -- {players[0]}: {points[0]} | {players[1]}: {points[1]} |\n'
